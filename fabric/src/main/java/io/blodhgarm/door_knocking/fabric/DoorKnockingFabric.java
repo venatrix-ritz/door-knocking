@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -18,7 +18,7 @@ public class DoorKnockingFabric implements ModInitializer {
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> DoorKnocking.attemptDoorInteraction(player, world, pos));
 
         var listener = new SimpleSynchronousResourceReloadListener() {
-            @Override public ResourceLocation getFabricId() { return DoorKnocking.CONFIG_HOLDER.getId(); }
+            @Override public Identifier getFabricId() { return DoorKnocking.CONFIG_HOLDER.getId(); }
             @Override public void onResourceManagerReload(ResourceManager resourceManager) { DoorKnocking.CONFIG_HOLDER.onResourceManagerReload(resourceManager); }
         };
 

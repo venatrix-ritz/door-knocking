@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +26,7 @@ public class EasyJsonConfig<T> implements ResourceManagerReloadListener {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private final Gson gson;
-    private final ResourceLocation configName;
+    private final Identifier configName;
 
     private final Supplier<Path> configPathSup;
 
@@ -36,11 +36,11 @@ public class EasyJsonConfig<T> implements ResourceManagerReloadListener {
     @Nullable
     private T instance = null;
 
-    public EasyJsonConfig(ResourceLocation configName, Supplier<Path> configPathSup, Function<JsonObject, T> reader, Supplier<JsonObject> constructor) {
+    public EasyJsonConfig(Identifier configName, Supplier<Path> configPathSup, Function<JsonObject, T> reader, Supplier<JsonObject> constructor) {
         this(gsonBuilder -> {}, configName, configPathSup, reader, constructor);
     }
 
-    public EasyJsonConfig(Consumer<GsonBuilder> builderConsumer, ResourceLocation configName, Supplier<Path> configPathSup, Function<JsonObject, T> reader, Supplier<JsonObject> factory) {
+    public EasyJsonConfig(Consumer<GsonBuilder> builderConsumer, Identifier configName, Supplier<Path> configPathSup, Function<JsonObject, T> reader, Supplier<JsonObject> factory) {
         var builder = new GsonBuilder().setPrettyPrinting();
 
         builderConsumer.accept(builder);
@@ -158,8 +158,8 @@ public class EasyJsonConfig<T> implements ResourceManagerReloadListener {
         }
     }
 
-    public ResourceLocation getId() {
-        return ResourceLocation.fromNamespaceAndPath("easy_json_config", configName.toString().replace(":", "/"));
+    public Identifier getId() {
+        return Identifier.fromNamespaceAndPath("easy_json_config", configName.toString().replace(":", "/"));
     }
 
     @Override

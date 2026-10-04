@@ -8,7 +8,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -61,11 +61,11 @@ public class DoorKnocking {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final List<KnockingNoiseCheck> DEFAULT_CHECKS = List.of(
-            new KnockingNoiseCheck(BlockTags.WOODEN_DOORS.location(), 0.6f, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR.getLocation()),
-            new KnockingNoiseCheck(BlockTags.DOORS.location(), 0.6f, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR.getLocation()),
-            new KnockingNoiseCheck(BlockTags.WOODEN_TRAPDOORS.location(), 4.0f, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR.getLocation()),
-            new KnockingNoiseCheck(BlockTags.TRAPDOORS.location(), 4.0f, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR.getLocation()),
-            new KnockingNoiseCheck(BlockTags.FENCE_GATES.location(), 1.2f, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR.getLocation(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR.getLocation())
+            new KnockingNoiseCheck(BlockTags.WOODEN_DOORS.location(), 0.6f, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR.location()),
+            new KnockingNoiseCheck(BlockTags.DOORS.location(), 0.6f, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR.location()),
+            new KnockingNoiseCheck(BlockTags.WOODEN_TRAPDOORS.location(), 4.0f, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR.location()),
+            new KnockingNoiseCheck(BlockTags.TRAPDOORS.location(), 4.0f, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR.location()),
+            new KnockingNoiseCheck(BlockTags.FENCE_GATES.location(), 1.2f, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR.location(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR.location())
     );
 
     private static <T> T getFrom(JsonObject object, String name, Function<JsonElement, T> function) {
@@ -76,21 +76,21 @@ public class DoorKnocking {
         }
     }
 
-    public record KnockingNoiseCheck(ResourceLocation isOfType, float pitch, ResourceLocation primarySoundEvent, @Nullable ResourceLocation woodenSoundEvent){
-        public KnockingNoiseCheck(ResourceLocation isOfType, float pitch, ResourceLocation primarySoundEvent) {
+    public record KnockingNoiseCheck(Identifier isOfType, float pitch, Identifier primarySoundEvent, @Nullable Identifier woodenSoundEvent){
+        public KnockingNoiseCheck(Identifier isOfType, float pitch, Identifier primarySoundEvent) {
             this(isOfType, pitch, primarySoundEvent, null);
         }
 
         public @Nullable Pair<SoundEvent, Float> getSoundInfo(BlockState blockState) {
             if (!blockState.is(TagKey.create(Registries.BLOCK, isOfType))) return null;
 
-            ResourceLocation soundEventId = primarySoundEvent;
+            Identifier soundEventId = primarySoundEvent;
 
             if (blockState.ignitedByLava() && woodenSoundEvent != null) {
                 soundEventId = woodenSoundEvent;
             }
 
-            var soundEvent = BuiltInRegistries.SOUND_EVENT.get(soundEventId);
+            var soundEvent = BuiltInRegistries.SOUND_EVENT.getValue(soundEventId);
 
             if (soundEvent == null) {
                 LOGGER.warn("[DoorKnocking]: Unable to locate the given SoundEvent [{}] as it was not found in the registry!", soundEventId);
@@ -126,14 +126,14 @@ public class DoorKnocking {
         }
 
         public static KnockingNoiseCheck fromJson(JsonObject jsonObject) {
-            var isOfTypeTag = ResourceLocation.tryParse(getFrom(jsonObject, "block_tag", JsonElement::getAsString));
+            var isOfTypeTag = Identifier.tryParse(getFrom(jsonObject, "block_tag", JsonElement::getAsString));
             var pitch = getFrom(jsonObject, "pitch", JsonElement::getAsFloat);
-            var primarySoundEvent = ResourceLocation.tryParse(getFrom(jsonObject, "sound_event", JsonElement::getAsString));
+            var primarySoundEvent = Identifier.tryParse(getFrom(jsonObject, "sound_event", JsonElement::getAsString));
 
-            ResourceLocation woodenSoundEvent = null;
+            Identifier woodenSoundEvent = null;
 
             if (jsonObject.has("wooden_sound_event")) {
-                woodenSoundEvent = ResourceLocation.tryParse(getFrom(jsonObject, "wooden_sound_event", JsonElement::getAsString));
+                woodenSoundEvent = Identifier.tryParse(getFrom(jsonObject, "wooden_sound_event", JsonElement::getAsString));
             }
 
             return new KnockingNoiseCheck(isOfTypeTag, pitch, primarySoundEvent, woodenSoundEvent);
@@ -173,7 +173,7 @@ public class DoorKnocking {
 
     public record Config(float volume, List<KnockingNoiseCheck> checks) {}
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
     }
 }
